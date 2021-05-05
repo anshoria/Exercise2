@@ -13,12 +13,12 @@ import java.util.HashMap;
 
 public class DBController extends SQLiteOpenHelper {
     public DBController(Context context) {
-        super(context, "ProdiTI", null, 1);
+        super(context, "ProdiIT", null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table teman(id integer primary key,nama text, telpon text)");
+        db.execSQL("create table teman (id integer primary key, nama text, telpon text)");
     }
 
     @Override
@@ -26,12 +26,13 @@ public class DBController extends SQLiteOpenHelper {
         db.execSQL("drop table if exists teman");
         onCreate(db);
     }
-    public void insertdata(HashMap<String,String> queryValues){
+
+    public void insertData(HashMap<String,String> queryvalues){
         SQLiteDatabase basisdata = this.getWritableDatabase();
         ContentValues nilai = new ContentValues();
-        nilai.put("nama",queryValues.get("nama"));
-        nilai.put("telpon",queryValues.get("telpon"));
-        basisdata.insert("teman",null,nilai);
+        nilai.put("nama", queryvalues.get("nama"));
+        nilai.put("telpon", queryvalues.get("telpon"));
+        basisdata.insert("teman", null, nilai);
         basisdata.close();
     }
 
@@ -52,5 +53,23 @@ public class DBController extends SQLiteOpenHelper {
         }
         db.close();
         return daftarTeman;
+    }
+
+    public void editData(HashMap<String ,String> queryValues){
+
+        SQLiteDatabase basisData = this.getWritableDatabase();
+        ContentValues nilai = new ContentValues();
+
+        nilai.put("nama", queryValues.get("nama"));
+        nilai.put("telpon", queryValues.get("telpon"));
+
+        basisData.update("teman", nilai, "id = ?", new String[]{queryValues.get("id")});
+        basisData.close();
+    }
+
+    public  void hapusData(String id){
+        SQLiteDatabase basisData = this.getWritableDatabase();
+        basisData.delete("teman", "id = ?",new String[] {id});
+        basisData.close();
     }
 }

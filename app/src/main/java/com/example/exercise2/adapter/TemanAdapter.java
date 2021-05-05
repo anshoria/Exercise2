@@ -1,8 +1,12 @@
 package com.example.exercise2.adapter;
 
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,7 +20,11 @@ import androidx.appcompat.view.menu.MenuView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.exercise2.EditDataTeman;
+import com.example.exercise2.MainActivity;
 import com.example.exercise2.R;
+import com.example.exercise2.ViewDataTeman;
+import com.example.exercise2.database.DBController;
 import com.example.exercise2.database.Teman;
 
 import org.w3c.dom.Text;
@@ -58,20 +66,95 @@ public class TemanAdapter extends RecyclerView.Adapter<TemanAdapter.TemanViewHol
     public class TemanViewHolder extends RecyclerView.ViewHolder {
         private CardView cardku;
         private TextView namaTxt,telponTxt;
+        private Context context;
+        String id, nama, telpon;
+        Bundle bundle = new Bundle();
+        DBController controller;
         public TemanViewHolder(View view) {
             super(view);
             cardku = (CardView) view.findViewById(R.id.kartuku);
             namaTxt = (TextView) view.findViewById(R.id.textNama);
             telponTxt = (TextView) view.findViewById(R.id.textTelpon);
+            context = itemView.getContext();
+            controller = new DBController(context);
+
+            cardku.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    nama = listdata.get(getAdapterPosition()).getNama();
+                    telpon = listdata.get(getAdapterPosition()).getTelpon();
+
+                    bundle.putString("nama", nama.trim());
+                    bundle.putString("telpon", telpon.trim());
+
+                    Intent intent = new Intent(context, ViewDataTeman.class);
+                    intent.putExtras(bundle);
+                    context.startActivity(intent);
+                }
+            });
 
             cardku.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public boolean onLongClick(View v) {
-                    return true;
+                public boolean onLongClick(View view) {
+
+                    PopupMenu pop = new PopupMenu(context, view);
+                    pop.inflate(R.menu.popup_menu);
+
+                    pop.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.mnedit:
+                                    id = listdata.get(getAdapterPosition()).getId();
+                                    nama = listdata.get(getAdapterPosition()).getNama();
+                                    telpon = listdata.get(getAdapterPosition()).getTelpon();
+
+                                    bundle.putString("id", id.trim());
+                                    bundle.putString("nama", nama.trim());
+                                    bundle.putString("telpon", telpon.trim());
+
+                                    Intent intent = new Intent(context, EditDataTeman.class);
+                                    intent.putExtras(bundle);
+                                    context.startActivity(intent);
+                                    break;
+                                case R.id.mndelete:
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                    builder.setTitle("Hapus Data");
+                                    builder.setMessage("Apakah anda yakin ingin menghapus kontak ini?");
+                                    builder.setCancelable(true);
+                                    builder.setPositiveButton("Ya",
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    id = listdata.get(getAdapterPosition()).getId();
+                                                    controller.hapusData(id);
+
+                                                    Intent intent = new Intent(context, MainActivity.class);
+                                                    context.startActivity(intent);
+                                                }
+                                            }
+                                    );
+                                    builder.setNegativeButton("Batal",
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    dialogInterface.cancel();
+                                                }
+                                            }
+                                    );
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.show();
+                                    break;
+                            }
+                            return false;
+                        }
+                    });
+                    pop.show();
+                    return false;
                 }
             });
         }
-
     }
 
 }
